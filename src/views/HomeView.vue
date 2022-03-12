@@ -62,12 +62,13 @@ export default Vue.extend({
 
   methods: {
     uploadFile() {
+      this.clearSelection();
       if (this.chosenFile === null) {
         return;
       }
       let formData = new FormData();
       formData.append('file', this.chosenFile);
-      formData.append('require_type', this.requireType);
+      formData.append('type', this.requireType);
       formData.append('layer', this.splitLayer ? 'split' : 'single');
 
       uploadDrawing(formData)
