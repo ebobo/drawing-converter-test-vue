@@ -21,19 +21,15 @@ http.interceptors.response.use(
   }
 );
 
-export interface DrawingFile {
-  name: string;
-  content_type: string;
-  last_updated: number;
-  data: File | null;
-}
-
-// export interface DrawingUploadRequest {
-//   require_type: string;
-//   split_layer: boolean;
-//   data: UintArray;
+// export interface DrawingFiles {
+//   drawings: DrawingFile[];
 // }
-
+export interface DrawingFile {
+  id: number;
+  name: string;
+  contentType: string;
+  lastUpdated: number;
+}
 export interface DrawingUploadResponse {
   ID: number;
 }
@@ -51,4 +47,11 @@ export async function uploadDrawing(
     .then((response) => {
       return response.data;
     });
+}
+
+export async function listUploadedDrawings(): Promise<DrawingFile[]> {
+  return http.get(`/drawings`).then((response) => {
+    console.log(response.data.drawings);
+    return response.data.drawings;
+  });
 }
