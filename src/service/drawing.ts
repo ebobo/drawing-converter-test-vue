@@ -30,8 +30,22 @@ export interface DrawingFile {
   contentType: string;
   lastUpdated: number;
 }
+
+export interface ImageFile {
+  id: number;
+  name: string;
+  drawingId: string;
+  contentType: string;
+}
+
 export interface DrawingUploadResponse {
   ID: number;
+}
+
+export interface GetImagesRequest {
+  drawingId: number;
+  imageType: string;
+  splitLayer: boolean;
 }
 
 // REST
@@ -51,7 +65,26 @@ export async function uploadDrawing(
 
 export async function listUploadedDrawings(): Promise<DrawingFile[]> {
   return http.get(`/drawings`).then((response) => {
-    console.log(response.data.drawings);
     return response.data.drawings;
   });
+}
+
+export async function fetchDrawingsData(drawingId: number): Promise<any> {
+  return http
+    .get(`/drawings/data`, { params: { drawingId } })
+    .then((response) => {
+      return response.data;
+    });
+}
+
+export async function fetchImages(
+  drawingId: number,
+  imageType: string,
+  splitLayer: boolean
+): Promise<ImageFile[]> {
+  return http
+    .get(`/drawings/${drawingId}/images/${imageType}/layer/${splitLayer}`)
+    .then((response) => {
+      return response.data.images;
+    });
 }
