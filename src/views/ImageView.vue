@@ -218,7 +218,8 @@ export default Vue.extend({
         .then((response) => {
           this.currentDrawingData = JSON.parse(
             // converte string data to json object.
-            atob(response.drawingData) //base64 decode typescript
+            // atob(response.drawingData) //base64 decode typescript
+            response.metaData
           ).layers;
         })
         .catch((error) => {
