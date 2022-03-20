@@ -31,11 +31,12 @@ export interface DrawingFile {
   lastUpdated: number;
 }
 
-export interface ImageFile {
+export interface ImageInfo {
   id: number;
   name: string;
   drawingId: string;
   contentType: string;
+  subLayer: boolean;
 }
 
 export interface DrawingUploadResponse {
@@ -77,14 +78,26 @@ export async function fetchDrawingsData(drawingId: number): Promise<any> {
     });
 }
 
-export async function fetchImages(
+export async function fetchImagesInfo(
   drawingId: number,
   imageType: string,
   splitLayer: boolean
-): Promise<ImageFile[]> {
+): Promise<ImageInfo[]> {
   return http
-    .get(`/drawings/${drawingId}/images/${imageType}/layer/${splitLayer}`)
+    .get(`/drawings/images/info`, {
+      params: { drawingId, imageType, splitLayer },
+    })
     .then((response) => {
       return response.data.images;
+    });
+}
+
+export async function fetchImage(imageId: number): Promise<string> {
+  return http
+    .get(`/drawings/image`, {
+      params: { imageId },
+    })
+    .then((response) => {
+      return response.data;
     });
 }

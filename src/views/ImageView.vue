@@ -9,50 +9,119 @@
     <div v-if="drawingFiles">
       <h3 class="ma-4 blue-grey--text">Drawings :</h3>
       <v-row
-        class="ma-2 ml-6 mb-6"
+        class="ma-1 ml-6 mb-6"
         v-for="(df, index) in drawingFiles"
         :key="index"
       >
         <v-col cols="1">
-          <span class="subheading font-weight-light mr-2 mt-1">ID: </span>
+          <span class="subheading font-weight-light mr-2">ID: </span>
           <span
             class="subheading font-weight-light mr-4 mt-1 blue--text"
             v-text="df.id"
           ></span>
         </v-col>
         <v-col cols="3">
-          <span class="subheading font-weight-light mr-2 mt-1">Name: </span>
+          <span class="subheading font-weight-light mr-2">Name: </span>
           <span
             class="subheading font-weight-light mr-4 mt-1 blue--text"
             v-text="df.name"
           ></span>
         </v-col>
-        <v-col cols="2">
-          <span class="subheading font-weight-light mr-2 mt-1">Type: </span>
+        <v-col cols="1">
+          <span class="subheading font-weight-light mr-2">Type: </span>
           <span
             class="subheading font-weight-light mr-4 mt-1 blue--text"
             v-text="df.contentType"
           ></span>
         </v-col>
         <v-col cols="4">
-          <span class="subheading font-weight-light mr-2 mt-1"
-            >Last Updated:
-          </span>
+          <span class="subheading font-weight-light mr-2">Last Updated: </span>
           <span
-            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            class="subheading font-weight-light mr-4 blue--text"
             v-text="df.lastUpdated"
           ></span>
         </v-col>
-        <v-col cols="2">
-          <v-btn color="primary" small top @click="getImages(df.id)">
+        <v-col cols="3">
+          <v-btn color="primary" small top @click="getImagesInfo(df.id, false)">
             <v-icon>mdi-file-image</v-icon>
+          </v-btn>
+          <v-btn
+            class="ml-1"
+            color="cyan"
+            small
+            @click="getImagesInfo(df.id, true)"
+          >
+            <v-icon>mdi-image-multiple-outline</v-icon>
           </v-btn>
           <v-btn class="ml-1" color="success" small top @click="getData(df.id)">
             <v-icon>mdi-book-information-variant</v-icon>
           </v-btn>
         </v-col>
       </v-row>
-      <v-row class="ml-1">
+
+      <!-- <v-row
+        class="ma-2 ml-6 mb-6"
+        v-for="(da, index) in imageDatas"
+        :key="index"
+      >
+        <div v-html="da"></div>
+      </v-row> -->
+      <!-- <div>{{ imageData }}</div> -->
+      <div class="image-viewer" v-html="imageData"></div>
+    </div>
+    <div v-if="imageInfos.length > 0">
+      <h3 class="ma-4 blue-grey--text">Drawing-Images Info :</h3>
+      <v-row
+        class="ma-2 ml-6 mb-6"
+        v-for="(info, index) in imageInfos"
+        :key="index"
+      >
+        <v-col cols="1">
+          <span class="subheading font-weight-light mr-2 mt-1">ID: </span>
+          <span
+            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            v-text="info.id"
+          ></span>
+        </v-col>
+        <v-col cols="3">
+          <span class="subheading font-weight-light mr-2 mt-1">Name: </span>
+          <span
+            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            v-text="info.name"
+          ></span>
+        </v-col>
+        <v-col cols="2">
+          <span class="subheading font-weight-light mr-2 mt-1">Type: </span>
+          <span
+            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            v-text="info.contentType"
+          ></span>
+        </v-col>
+        <v-col cols="2">
+          <span class="subheading font-weight-light mr-2 mt-1"
+            >Drawing ID:
+          </span>
+          <span
+            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            v-text="info.drawingId"
+          ></span>
+        </v-col>
+        <v-col cols="2">
+          <span class="subheading font-weight-light mr-2 mt-1">Layer: </span>
+          <span
+            class="subheading font-weight-light mr-4 mt-1 blue--text"
+            v-text="info.subLayer"
+          ></span>
+        </v-col>
+        <v-col cols="2">
+          <v-btn color="primary" small @click="getImage(info.id)">
+            <v-icon>mdi-eye</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
+    </div>
+    <div>
+      <v-row class="ml-1" v-if="currentDrawingData">
         <tree-view class="ma-2" :data="currentDrawingData"></tree-view>
       </v-row>
     </div>
@@ -64,11 +133,11 @@ import Vue from 'vue';
 
 import {
   DrawingFile,
-  ImageFile,
+  ImageInfo,
   listUploadedDrawings,
-  fetchImages,
+  fetchImagesInfo,
   fetchDrawingsData,
-  // fetchMetaData,
+  fetchImage,
 } from '../service/drawing';
 import TreeView from 'vue-json-tree-view';
 
@@ -78,12 +147,16 @@ export default Vue.extend({
   name: 'Images',
   data(): {
     drawingFiles: DrawingFile[];
-    imageFiles: ImageFile[];
+    imageInfos: ImageInfo[];
+    imageDatas: string[];
+    imageData: string;
     currentDrawingData: any;
   } {
     return {
       drawingFiles: [],
-      imageFiles: [],
+      imageInfos: [],
+      imageDatas: [],
+      imageData: '',
       currentDrawingData: null,
     };
   },
@@ -97,15 +170,28 @@ export default Vue.extend({
           console.log(error);
         });
     },
-    getImages(id: number) {
-      this.imageFiles = [];
-      fetchImages(id, 'svg', false)
+    getImagesInfo(id: number, layer: boolean) {
+      this.imageDatas = [];
+      this.imageData = '';
+      this.currentDrawingData = null;
+      fetchImagesInfo(id, 'svg', layer)
         .then((response) => this.setImages(response))
         .catch((error) => {
           console.log(error);
         });
     },
+    getImage(id: number) {
+      this.imageDatas = [];
+      this.imageData = '';
+      this.currentDrawingData = null;
+      fetchImage(id)
+        .then((response) => this.setImage(response))
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     getData(id: number) {
+      this.imageInfos = [];
       this.currentDrawingData = null;
       fetchDrawingsData(id)
         .then((response) => {
@@ -123,16 +209,19 @@ export default Vue.extend({
       this.drawingFiles = files;
     },
     //server got the parameter
-    setImages(files: ImageFile[]) {
-      files.forEach((file) => {
-        console.log(file.id, file.name);
-      });
-      //   this.imageFiles = files;
+    setImages(images: ImageInfo[]) {
+      this.imageInfos = images;
+    },
+
+    setImage(data: string) {
+      this.imageData = data;
     },
 
     clearSelection() {
+      this.imageData = '';
+      this.imageInfos = [];
       this.drawingFiles = [];
-      this.imageFiles = [];
+      this.imageDatas = [];
       this.currentDrawingData = null;
     },
   },
@@ -150,5 +239,12 @@ export default Vue.extend({
   width: 50px;
   margin-top: 0px;
   align-items: center;
+}
+
+.image-viewer {
+  border: 4px dotted blue;
+  display: flex;
+  width: 600px;
+  height: 600px;
 }
 </style>
