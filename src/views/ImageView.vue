@@ -68,13 +68,15 @@
       </v-row> -->
       <!-- <div>{{ imageData }}</div> -->
       <v-row align="center" justify="center" class="ml-1">
-        <div class="image-viewer" v-html="imageData"></div>
+        <v-zoomer style="width: 500px; height: 500px; border: solid 1px silver">
+          <div class="image-viewer" v-html="imageData"></div>
+        </v-zoomer>
       </v-row>
     </div>
     <div v-if="imageInfos.length > 0">
       <v-row>
         <h3 class="ma-4 blue-grey--text">Drawing-Images Info :</h3>
-        <v-btn class="ml-2 mt-4" color="#FF5722" small @click="getData(df.id)">
+        <v-btn class="ml-2 mt-4" color="#FF5722" small @click="combineImage()">
           <v-icon>mdi-layers-plus</v-icon>
         </v-btn>
       </v-row>
@@ -153,6 +155,7 @@ import {
   fetchImagesInfo,
   fetchDrawingsData,
   fetchImage,
+  fetchCombineImage,
 } from '../service/drawing';
 import TreeView from 'vue-json-tree-view';
 
@@ -256,6 +259,16 @@ export default Vue.extend({
       return this.selectedImageIDs.includes(id);
     },
 
+    combineImage() {
+      fetchCombineImage(this.selectedImageIDs)
+        .then((response) => {
+          this.setImage(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
     clearSelection() {
       this.imageData = '';
       this.imageInfos = [];
@@ -282,11 +295,11 @@ export default Vue.extend({
 }
 
 .image-viewer {
-  display: flex;
+  /* display: flex;
   border: 3px dotted rgb(147, 197, 243);
   display: flex;
   width: 500px;
-  height: 500px;
+  height: 500px; */
   align-items: center;
 }
 </style>

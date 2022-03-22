@@ -1,4 +1,5 @@
 import Axios from 'axios';
+import qs from 'qs';
 
 const http = Axios.create({
   baseURL: process.env.VUE_APP_API_BASE_PATH,
@@ -98,6 +99,19 @@ export async function fetchImage(imageId: number): Promise<string> {
       params: { imageId },
     })
     .then((response) => {
+      return response.data;
+    });
+}
+
+export async function fetchCombineImage(ids: number[]): Promise<string> {
+  return http
+    .get(`/drawings/image/combine`, {
+      params: { imageIds: ids },
+      paramsSerializer: (params) =>
+        qs.stringify(params, { arrayFormat: 'repeat' }),
+    })
+    .then((response) => {
+      console.log(response.data);
       return response.data;
     });
 }
